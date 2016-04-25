@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>clientPersonCenter</title>
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <style>
+        #mainFrame{
+            margin-left:20%;
+            margin-right:20%;
+            padding: 30px;}
+        #personalInfo{
+            margin-left: 20px;
+            margin-right:20px;
+            padding: 5px;
+        }
+        #currentOrders{
+            height: 300px;
+            width: 500px;
+            overflow: scroll;
+            border: solid gray 2px;
+        }
+    </style>
+
+    <script>
+
+        function showCurrentRequests() {
+            $(document).ready(function () {
+                $("#currentOrders").empty();
+                $.getJSON("/orderInformation",function (data) {
+                    if(!data.hasOwnProperty("Error")){
+                        var numOfOrders=data.Orders.length;
+                        if(numOfOrders==0){$("#currentOrders").append("<p>No results found!</p>");}
+                        else {
+                            for (var i = 0; i < numOfOrders; i++) {
+                                var eleme = $('<p class="orders" onclick="ordersOnclick(this)" id="' + data.Orders[i].OrderID + '"></p>').text(data.Orders[i].Title);
+                                $("#currentOrders").append(eleme);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        alert("Error: "+data.Error);
+                    }
+                });
+            });
+        }
+
+        function ordersOnclick(ee) {
+            $(document).ready(function () {
+                $.getJSON("/chooseOrderID",{OrderID:ee.id},function (data) {
+                    if(data.Result==true)
+                    {
+                        window.location.href="/clientOrderPage";
+                        //window.location.href="/orderStatus";
+                    }
+                    else{alert("some error occurs");}
+                });
+            });
+        }
+
+        function toNewRequests() {
+            window.location.href="/newRequests";
+            //window.location.href="/NewRequests";
+        }
+        
+        function showClientPersonalInfo() {
+            $(document).ready(function () {
+                $.getJSON("/whoAmI",function (data) {
+                    if(data.hasOwnProperty("Error"))
+                    {
+                        alert("Error: "+data.Error);
+                    }
+                    else
+                    {
+                        $("#portrait").attr("src",data.Picture);
+                        $("#staffName").append(data.Name);
+                        $("#staffRemarks").append(data.Remarks);
+                    }
+                })
+            });
+        }
+        
+    </script>
+</head>
+<body onload="showClientPersonalInfo()">
+<div id="mainFrame">
+    <h2>Personal Information</h2>
+    <div id="personalInfo">
+
+        <img src="a.png" height="200px" id="portrait"/>
+        <br/>
+        <p id="staffName">Name: </p>
+        <p id="staffRemarks">Remarks: </p>
+
+    </div>
+
+    <button id="makeRequest" onclick="toNewRequests()">Make a new request</button>
+    <br/>
+    <button id="currentRequests" onclick="showCurrentRequests()">Current requests</button>
+    <br/>
+    <div id="currentOrders"></div>
+
+</div>
+
+
+</body>
+</html>
